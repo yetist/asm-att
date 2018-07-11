@@ -1,0 +1,35 @@
+The commands used for displaying this information are shown in the following table.
+Data Command Description
+info registers | Display the values of all registers
+print          | Display the value of a specific register or variable from the program
+x              | Display the contents of a specific memory location
+
+The print command can also be used to display individual register values. Including a modifier can
+modify the output format of the print command:
+❑ print/d to display the value in decimal
+❑ print/t to display the value in binary
+❑ print/x to display the value in hexadecimal
+
+x/nyz
+where n is the number of fields to display, y is the format of the output, and can be
+❑ c for character
+❑ d for decimal
+❑ x for hexadecimal
+and z is the size of the field to be displayed:
+❑ b for byte
+❑ h for 16-bit word (half-word)
+❑ w for 32-bit word
+
+
+Directive Data Type
+.ascii Text string
+.asciz Null-terminated text string
+.byte Byte value
+.double Double-precision floating-point number
+.float Single-precision floating-point number
+.int 32-bit integer number
+.long 32-bit integer number (same as .int)
+.octa 16-byte integer number
+.quad 8-byte integer number
+.short 16-bit integer number
+.single Single-precision floating-point number (same as .float)
