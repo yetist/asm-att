@@ -1,0 +1,19 @@
+[binaries]
+c = '/opt/mips64el-linux-gnu/bin/mips64el-linux-gcc'
+cpp = '/opt/mips64el-linux-gnu/bin/mips64el-linux-g++'
+ar = '/opt/mips64el-linux-gnu/bin/mips64el-linux-ar'
+strip = '/opt/mips64el-linux-gnu/bin/mips64el-linux-strip'
+#exe_wrapper = 'qemu-mips64el'
+ld = '/opt/mips64el-linux-gnu/bin/mips64el-linux-ld'
+as = '/opt/mips64el-linux-gnu/bin/mips64el-linux-as'
+
+[properties]
+rpath = '/opt/mips64el-linux-gnu/mips64el-buildroot-linux-gnu/sysroot/lib64/'
+#ldpath = '/opt/mips64el-linux-gnu/mips64el-buildroot-linux-gnu/sysroot/lib64/ld.so.1'
+c_link_args = ['-Wl,-dynamic-linker=/opt/mips64el-linux-gnu/mips64el-buildroot-linux-gnu/sysroot/lib64/ld.so.1']
+
+[host_machine]
+system = 'linux'
+cpu_family = 'mips64'
+cpu = 'loongson3'
+endian = 'little'

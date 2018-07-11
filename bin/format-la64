@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+# coding: utf-8
+
+import sys
+
+reg_table = [
+        "zero", "ra", "tp", "sp", "a0", #5
+        "a1", "a2", "a3", "a4", "a5",   #10
+        "a6", "a7", "t0", "t1", "t2",   #15
+        "t3", "t4", "t5", "t6", "t7",   #20
+        "t8", "x", "fp", "s0", "s1",    #25
+        "s2", "s3", "s4", "s5", "s6",   #30
+        "s7", "s8"]
+
+def usage():
+    line="""Usage: %s <FILE>
+    Format Loongarch asm code to use register name"""
+    print(line % sys.argv[0])
+
+def sprint(line):
+    items = line.split()
+    length = len(items)
+    if length == 2 and (not (items[0][0] == '0' or items[0][0] == '.')):
+        # gcc -S
+        items[1] = items[1].replace(',', ', ')
+        buf = "\t%-12s%s\n" % (items[0], items[1])
+        return buf
+    if length == 4 and (not items[1][0] in ('$', '%')):
+        # objdump -d
+        items[3] = items[3].replace(',', ', ')
+        buf = "%9s%15s%8s%-12s%s\n" % (items[0], items[1], ' ', items[2], items[3])
+        return buf
+    elif length == 7 and items[0][0] != '.':
+        # objdump -d
+        items[3] = items[3].replace(',', ', ')
+        buf = "%9s%15s%8s%-12s%-28s%s\n" % (items[0], items[1], ' ', items[2], items[3], ' '.join(items[4:]))
+        return buf
+    else:
+        return line
+
+def fmt(file):
+    d = open(file).readlines()
+    out=[]
+    for i in d:
+        i = sprint(i)
+        for j in range(31, 9, -1):
+            regnum = "$r"+str(j)
+            regname = "$" + reg_table[j]
+            i = i.replace(regnum, regname)
+        for j in range(10):
+            regnum = "$r"+str(j)
+            regname = "$" + reg_table[j]
+            i = i.replace(regnum, regname)
+        out.append(i)
+    fd = open(file, "w+")
+    fd.write("".join(out))
+    fd.close()
+    #print("".join(out))
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        usage()
+        sys.exit(0)
+    fmt(sys.argv[1])

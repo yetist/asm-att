@@ -1,0 +1,6 @@
+subdir('hello')
+subdir('common')
+subdir('regdump')
+subdir('01-add-sub')
+subdir('02-shift-bit')
+subdir('03-bit')

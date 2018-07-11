@@ -1,0 +1,598 @@
+= 指令集
+
+== 寄存器
+
++--------------------------------------------+
+|  助记符  编号 | 助记符  编号| 助记符  编号 |
++--------------------------------------------+
+|  zero     R0  |  tp     R2  |  x      R21  |
+|  ra       R1  |  sp     R3  |  fp     R22  |
++--------------------------------------------+
+|  a0/v0    R4  |  t0     R12 |  s0     R23  |
+|  a1/v1    R5  |  t1     R13 |  s1     R24  |
+|  a2       R6  |  t2     R14 |  s2     R25  |
+|  a3       R7  |  t3     R15 |  s3     R26  |
+|  a4       R8  |  t4     R16 |  s4     R27  |
+|  a5       R9  |  t5     R17 |  s5     R28  |
+|  a6       R10 |  t6     R18 |  s6     R29  |
+|  a7       R11 |  t7     R19 |  s7     R30  |
+|               |  t8     R20 |  s8     R31  |
++--------------------------------------------+
+
+
+== 算术运算类
+
+- add.{w/d}                 : Add Word/Doubleword
+- sub.{w/d}                 : Substract Word/Doubleword
+
+add.w rd, rj, rk                # x[rd] = sext((x[rj] + x[rk]))
+add.d rd, rj, rk                # x[rd] = x[rj] + x[rk]
+sub.w rd, rj, rk                # x[rd] = sext(x[rj] - x[rk])
+sub.d rd, rj, rk                # x[rd] = x[rj] - x[rk]
+
+- addi.{w/d}                : Add Immediate Word / Doubleword
+- addu16i.d                 : Add Upper 16 Immediate Doubleword
+
+addi.w rd, rj, si12             # x[rd] = sext(x[rj] + sext(si12))
+addi.d rd, rj, si12             # x[rd] = x[rj] + sext(si12)
+addu16i.d rd, rj, si16          # x[rd] = x[rj] + sext(si16 << 16) = x[rj] + sext(si16 * 0x10000), (run with ldptr.w/d、stptr.w/d to access GOT)
+
+- alsl.{w[u]/d}             : Arithmetic Logical Shift Left Word / [Unsigned] / Doubleword
+
+alsl.w  rd, rj, rk, sa2         # x[rd] = sext(x[rj] << sa2 + x[rk]); sa2 <= 4
+alsl.wu rd, rj, rk, sa2         # x[rd] = zext(x[rj] << sa2 + x[rk]); sa2 <= 4
+alsl.d  rd, rj, rk, sa2         # x[rd] = x[rj] << sa2 + x[rk]; sa2 <= 4
+
+- lu12i.w                   : Load Upper +12 Immediate
+- lu32i.d                   : Load Upper +32 Immediate
+- lu52i.d                   : Load Upper +52 Immediate
+
+lu12i.w rd, si20                # x[rd] = sext(si20 << 12) = sext(si20 * 0x1000)
+lu32i.d rd, si20                # x[rd] = sext(si20 << 32) = sext(si20 * 0x10000 0000)
+lu52i.d rd, rj, si12            # x[rd] = sext(si12 << 52) = sext(si12 * 0x10 0000 0000 0000), (run with ori, to load high than 12 bit immediate to rd)
+
+- slt[u]                    : Set on Less Than [Unsigned]
+
+slt rd, rj, rk                  # if (x[rj] < x[rk]) x[rd] = 1; else x[rd] = 0;
+sltu rd, rj, rk                 # if (x[rj] <U x[rk]) x[rd] = 1; else x[rd] = 0;
+
+- slt[u]i                   : Set on Less Than [Unsigned] Immediate
+
+slti rd, rj, si12               # if (x[rj] < sext(si12)) x[rd] = 1; else x[rd] = 0;
+sltui rd, rj, si12              # if (x[rj] <U sext(si12)) x[rd] = 1; else x[rd] = 0;
+
+- pcaddi                    : Program Counter Add Immediate
+- pcaddu12i, pcaddu18i      : Program Counter Add Upper 12 / 18 immediate
+- pcalau12i                 : Program Counter Add ???
+
+pcaddi     rd, si20             # x[rd] = PC + sext(si20 << 2) = PC + sext(si20 * 4)
+pcaddu12i  rd, si20             # x[rd] = PC + sext(si20 << 12) = PC + sext(si20 * 0x1000)
+pcaddu18i  rd, si20             # x[rd] = PC + sext(si20 << 18) = PC + sext(si20 * 4 * 0x10000)
+pcalau12i  rd, si20             # x[rd] = (PC + sext(si20 << 12)) & 0xff ffff f000 = (PC + sext(si20 * 0x1000)) & 0xff ffff f000
+
+- and, or, nor, xor         : And / Or / Nor / Exclusive Or
+- andn                      : And Not ???
+- orn                       : Or Not ???
+
+and  rd, rj, rk                 # x[rd] = x[rj] & x[rk]
+or   rd, rj, rk                 # x[rd] = x[rj] | x[rk]
+nor  rd, rj, rk                 # x[rd] = ~(x[rj] | x[rk])
+xor  rd, rj, rk                 # x[rd] = x[rj] ^ x[rk]
+andn rd, rj, rk                 # x[rd] = x[rj] & (~x[rk])
+orn  rd, rj, rk                 # x[rd] = x[rj] | (~x[rk])
+
+- andi                      : And Immediate
+- ori                       : Or Immediate
+- xori                      : Exclusive Or Immediate
+
+andi rd, rj, ui12               # x[rd] = x[rj] & zext(ui12[11:0])
+ori  rd, rj, ui12               # x[rd] = x[rj] | zext(ui12[11:0])
+xori rd, rj, ui12               # x[rd] = x[rj] ^ zext(ui12[11:0])
+
+- nop                       : No Operation
+
+nop                             # andi r0, r0, 0
+
+- mul.{w/d}                 : Multiply Word / Doubleword
+- mulh.{w[u]/d[u]}          : Multiply High Word (Unsigned) / Doubleword (Unsigned)
+
+mul.w   rd, rj, rk              # x[rd] = sext((x[rj][31:0] * x[rk][31:0]) & 0xffffffff)[31:0]
+mulh.w  rd, rj, rk              # x[rd] = sext((x[rj][31:0] * x[rk][31:0]) >> 8)[31:0]
+mulh.wu rd, rj, rk              # x[rd] = sext((x[rj][31:0]U * x[rk][31:0]U) >> 8)[31:0]
+mul.d   rd, rj, rk              # x[rd] = (x[rj][63:0] * x[rk][63:0]) & 0xffff ffff ffff ffff
+mulh.d  rd, rj, rk              # x[rd] = (x[rj][63:0] * x[rk][63:0]) >> 16
+mulh.du rd, rj, rk              # x[rd] = (x[rj][63:0]U * x[rk][63:0]U) >> 16
+
+- mulw.d.w[u]               : Multiply Word Doubleword Word (Unsigned)
+
+mulw.d.w  rd, rj, rk            # x[rd] = (x[rj][31:0] * x[rk][31:0])[64:0]
+mulw.d.wu rd, rj, rk            # x[rd] = (x[rj][31:0]U * x[rk][31:0]U)[64:0]
+
+- div.{w[u]/d[u]}           : Divide Word (Unsigned) / Doubleword (Unsigned)
+- mod.{w[u]/d[u]}           : Mode Word (Unsigned) / Doubleword (Unsigned) ???
+
+div.w  rd, rj, rk               # x[rd] = sext(x[rj][31:0]  / x[rk][31:0])
+mod.w  rd, rj, rk               # x[rd] = sext(x[rj][31:0]  % x[rk][31:0])
+div.wu rd, rj, rk               # x[rd] = sext(x[rj][31:0]U / x[rk][31:0])
+mod.wu rd, rj, rk               # x[rd] = sext(x[rj][31:0]U % x[rk][31:0])
+div.d  rd, rj, rk               # x[rd] = sext(x[rj][63:0]  / x[rk][63:0])
+mod.d  rd, rj, rk               # x[rd] = sext(x[rj][63:0]  % x[rk][63:0])
+div.du rd, rj, rk               # x[rd] = sext(x[rj][63:0]U / x[rk][63:0])
+mod.du rd, rj, rk               # x[rd] = sext(x[rj][63:0]U % x[rk][63:0])
+
+== 移位运算
+
+- sll.w                     : Shift Left Logical Word
+- srl.w                     : Shift Right Logical Word
+- sra.w                     : Shift Right Arithmetic Word
+- rotr.w                    : Rotate Right Word ???
+
+sll.w   rd, rj, rk              # x[rd] = sext(x[rj][31:0] <<  x[rk][4:0])
+srl.w   rd, rj, rk              # x[rd] = sext(x[rj][31:0] >>  x[rk][4:0])
+sra.w   rd, rj, rk              # x[rd] = sext(x[rj][31:0] >>A x[rk][4:0])
+rotr.w  rd, rj, rk              # x[rd] = sext(x[rj][31:0] >>R x[rk][4:0])
+
+- slli.w                    : Shift Left Logical Immediate Word
+- srli.w                    : Shift Right Logical Immediate Word
+- srai.w                    : Shift Right Arithmetic Immediate Word
+- rotri.w                   : Rotate Right Immediate Word ???
+
+slli.w   rd, rj, ui5            # x[rd] = sext(x[rj][31:0] <<  ui5[4:0]U)
+srli.w   rd, rj, ui5            # x[rd] = sext(x[rj][31:0] >>  ui5[4:0]U)
+srai.w   rd, rj, ui5            # x[rd] = sext(x[rj][31:0] <<A ui5[4:0]U)
+rotri.w  rd, rj, ui5            # x[rd] = sext(x[rj][31:0] >>R ui5[4:0]U)
+
+- sll.d                     : Shift Left Logical Doubleword
+- srl.d                     : Shift Right Logical Doubleword
+- sra.d                     : Shift Right Arithmetic Doubleword
+- rotr.d                    : Rotate Right Doubleword ???
+
+sll.d   rd, rj, rk              # x[rd] = sext(x[rj][63:0] <<  x[rk][5:0])
+srl.d   rd, rj, rk              # x[rd] = sext(x[rj][63:0] >>  x[rk][5:0])
+sra.d   rd, rj, rk              # x[rd] = sext(x[rj][63:0] >>A x[rk][5:0])
+rotr.d  rd, rj, rk              # x[rd] = sext(x[rj][63:0] >>R x[rk][5:0])
+
+- slli.d                    : Shift Left Logical Immediate Doubleword
+- srli.d                    : Shift Right Logical Immediate Doubleword
+- srai.d                    : Shift Right Arithmetic Immediate Doubleword
+- rotri.d                   : Rotate Right Immediate Doubleword ???
+
+slli.d  rd, rj, ui6             # x[rd] = sext(x[rj][63:0] <<  ui6[5:0])
+srli.d  rd, rj, ui6             # x[rd] = sext(x[rj][63:0] >>  ui6[5:0])
+srai.d  rd, rj, ui6             # x[rd] = sext(x[rj][63:0] >>A ui6[5:0])
+rotri.d rd, rj, ui6             # x[rd] = sext(x[rj][63:0] >>R ui6[5:0])
+
+== 位操作
+
+- ext.w.{b/h}               : Extract Bit Field Word {Byte / Harfword}
+
+ext.w.b rd, rj                  # x[rd] = sext(x[rj][7:0])
+ext.w.h rd, rj                  # x[rd] = sext(x[rj][15:0])
+
+- cl{o/z}.{w/d}             : Count Leading {Ones/Zeros} in {Word/Doubleword}
+- ct{o/z}.{w/d}             : Count Tailing {Ones/Zeros} in {Word/Doubleword}
+
+clo.w rd, rj                    # x[rd] = count_of_0x1_from_leading(x[rj][31:0])
+clz.w rd, rj                    # x[rd] = count_of_0x0_from_leading(x[rj][31:0])
+cto.w rd, rj                    # x[rd] = count_of_0x1_from_tailing(x[rj][31:0])
+ctz.w rd, rj                    # x[rd] = count_of_0x0_from_tailing(x[rj][31:0])
+clo.d rd, rj                    # x[rd] = count_of_0x1_from_leading(x[rj][63:0])
+clz.d rd, rj                    # x[rd] = count_of_0x0_from_leading(x[rj][63:0])
+cto.d rd, rj                    # x[rd] = count_of_0x1_from_tailing(x[rj][63:0])
+ctz.d rd, rj                    # x[rd] = count_of_0x0_from_tailing(x[rj][63:0])
+
+- bytepick.{w/d}            : Byte Pick {Word / Doubleword}
+
+bytepick.w rd, rj, rk, sa2      # y=(x[rj][31:0] ... x[rk][31:0])[63:0]; x[rd] = sext((y[sa2:sa2-31])[31:0])
+bytepick.d rd, rj, rk, sa2      # y=(x[rj][63:0] ... x[rk][63:0])[127:0]; x[rd] = sext((y[sa3:sa3-63])[63:0])
+
+- revb.{2h/4h/2w/d}         : Revert Bit ???
+
+revb.2h rd, rj                  # a = revert_2byte(x[rj][15:0]); b = revert_2byte(x[rj][31:16]); x[rd] = sext(b[31:16] ... a[15:0])
+revb.4h rd, rj                  # x[rd][15:0] = revert_2byte(x[rj][15:0]); x[rd][31:16] = revert_2byte(x[rj][31:16]); x[rd][47:32] = revert_2byte(x[rj][47:32]); x[rd][63:48] = revert_2byte(x[rj][63:48]);
+revb.2w rd, rj                  # x[rd][31:0] = revert_4byte(x[rj][31:0]); x[rd][63:32] = revert_4byte(x[rj][63:32]);
+revb.d  rd, rj                  # x[rd] = revert_8byte(x[rj][63:0]);
+
+- revh.{2w/d}
+revh.2w rd, rj                  # x[rd][31:0] = revert_2harfword(x[rj][31:0]); x[rd][63:32] = revert_2harfword(x[rj][63:32]);
+revh.d  rd, rj                  # x[rd] = revert_4harfword(x[rj][63:0]);
+
+- bitrev.{4b/8b}
+bitrev.4b rd, rj                # a = revert_8bit(x[rj][7:0]); b = revert_8bit(x[rj][15:8]); c = revert_8bit(x[rj][23:16]); d = revert_8bit(x[rj][31:24]); x[rd] = sext(a[7:0] + b[15:8] + c[23:16] + d[31:24])
+bitrev.8b rd, rj                # x[rd][7:0] = revert_8bit(x[rj][7:0]); x[rd][15:8] = revert_8bit(x[rj][15:8]); x[rd][23:16] = revert_8bit(x[rj][23:16]); x[rd][31:24] = revert_8bit(x[rj][31:24]); x[rd][39:32] = revert_8bit(x[rj][39:32]); x[rd][47:40] = revert_8bit(x[rj][47:40]); x[rd][55:48] = revert_8bit(x[rj][55:48]); x[rd][63:56] = revert_8bit(x[rj][63:56]);
+
+- bitrev.{w/d}
+
+bitrev.w rd, rj                 # x[rd] = sext(revert_32bit(x[rj][31:0]))
+bitrev.d rd, rj                 # x[rd] = sext(revert_64bit(x[rj][63:0]))
+
+- bstrins.{w/d}             : Bit String Insert Word / Doubleword ???
+
+bstrins.w  rd, rj, msbw, lsbw   # x[rd][msbw:lsbw] = x[rj][msbw-lsbw:0]; x[rd] = sext(x[rd])
+bstrins.d  rd, rj, msbd, lsbd   # x[rd][msbd:lsbd] = x[rj][msbd-lsbd:0];
+
+- bstrpick.{w/d}            : Bit String Pick Word / Doubleword ???
+
+bstrpick.w rd, rj, msbw, lsbw   # x[rd] = sext(zext(x[rj][msbw:lsbw])[31:0])
+bstrpick.d rd, rj, msbd, lsbd   # x[rd] = zext(x[rj][msbw:lsbw])[63:0]
+
+- maskeqz
+- masknez
+
+maskeqz rd, rj, rk              # if(x[rk] == 0) x[rd] = x[rj]; else x[rd] = 0x0;
+masknez rd, rj, rk              # if(x[rk] != 0) x[rd] = x[rj]; else x[rd] = 0x0;
+
+== 转移
+
+- beq[z]                    : Branch on Equal [to Zero]
+- bne[z]                    : Branch on Not Equal [to Zero]
+- blt[u]                    : Branch on Less Than [Unsigned]
+- bge[u]                    : Branch on Greater Than or Equal to [Unsigned]
+
+beq  rd, rj, offs16             # if(x[rd]  == x[rj] ) goto PC + sext(offs16[15:0] << 2)
+bne  rd, rj, offs16             # if(x[rd]  != x[rj] ) goto PC + sext(offs16[15:0] << 2)
+blt  rd, rj, offs16             # if(x[rd]  <  x[rj] ) goto PC + sext(offs16[15:0] << 2)
+bge  rd, rj, offs16             # if(x[rd]  >= x[rj] ) goto PC + sext(offs16[15:0] << 2)
+bltu rd, rj, offs16             # if(x[rd]U <  x[rj]U) goto PC + sext(offs16[15:0] << 2)
+bgeu rd, rj, offs16             # if(x[rd]U >= x[rj]U) goto PC + sext(offs16[15:0] << 2)
+beqz rd, offs21                 # if(x[rd] == 0) goto PC + sext(offs21[20:0] << 2)
+bnez rd, offs21                 # if(x[rd] != 0) goto PC + sext(offs21[20:0] << 2)
+
+- b                         : Unconditional Branch
+- bl                        : Branch and Link
+- jirl                      : Jump Immediate Register and Link
+
+b offs26                        # goto PC + sext(offs26[25:0] << 2)
+bl offs26                       # goto PC + sext(offs26[25:0] << 2); ra(r1) = PC + 4
+jirl rd, rj, offs16             # goto x[rj] + sext(offs16[15:0] << 2); x[rd] = PC + 4;
+
+== 普通访存
+
+- ld.{b[u]/h[u]/w[u]/d}     : Load {Byte/Harfword/Word/Doubleword} Unsigned
+- st.{b/h/w/d}              : Store {Byte/Harfword/Word/Doubleword} Unsigned
+
+ld.b  rd, rj, si12              # x[rd] = sext(M(x[rj] + sext(si12[11:0])))
+ld.h  rd, rj, si12              # x[rd] = sext(M(x[rj] + sext(si12[11:0]))); may unalign Except
+ld.w  rd, rj, si12              # x[rd] = sext(M(x[rj] + sext(si12[11:0]))); may unalign Except
+ld.d  rd, rj, si12              # x[rd] = sext(M(x[rj] + sext(si12[11:0]))); may unalign Except
+ld.bu rd, rj, si12              # x[rd] = zext(M(x[rj] + sext(si12[11:0])))
+ld.hu rd, rj, si12              # x[rd] = zext(M(x[rj] + sext(si12[11:0]))); may unalign Except
+ld.wu rd, rj, si12              # x[rd] = zext(M(x[rj] + sext(si12[11:0]))); may unalign Except
+st.b  rd, rj, si12              # M(x[rj] + sext(si12[11:0])) = x[rd][7:0];  may unalign Except
+st.h  rd, rj, si12              # M(x[rj] + sext(si12[11:0])) = x[rd][15:0]; may unalign Except
+st.w  rd, rj, si12              # M(x[rj] + sext(si12[11:0])) = x[rd][31:0]; may unalign Except
+st.d  rd, rj, si12              # M(x[rj] + sext(si12[11:0])) = x[rd][63:0]; may unalign Except
+
+- ldx.{b[u]/h[u]/w[u]/d}    : Load ext ???
+- stx.{b/h/w/d}             : Store ext ???
+
+ldx.b  rd, rj, rk               # x[rd] = sext(M(x[rj] + x[rk]))
+ldx.h  rd, rj, rk               # x[rd] = sext(M(x[rj] + x[rk])); may unalign Except
+ldx.w  rd, rj, rk               # x[rd] = sext(M(x[rj] + x[rk])); may unalign Except
+ldx.d  rd, rj, rk               # x[rd] = sext(M(x[rj] + x[rk])); may unalign Except
+ldx.bu rd, rj, rk               # x[rd] = zext(M(x[rj] + x[rk]))
+ldx.hu rd, rj, rk               # x[rd] = zext(M(x[rj] + x[rk])); may unalign Except
+ldx.wu rd, rj, rk               # x[rd] = zext(M(x[rj] + x[rk])); may unalign Except
+stx.b  rd, rj, rk               # M(x[rj] + x[rk]) = x[rd][7:0];  may unalign Except
+stx.h  rd, rj, rk               # M(x[rj] + x[rk]) = x[rd][15:0]; may unalign Except
+stx.w  rd, rj, rk               # M(x[rj] + x[rk]) = x[rd][31:0]; may unalign Except
+stx.d  rd, rj, rk               # M(x[rj] + x[rk]) = x[rd][63:0]; may unalign Except
+
+- ldptr.{w/d}               : Load Pointer <Word|Doubleword>
+- stptr.{w/d}               : Store Pointer <Word|Doubleword>
+
+ldptr.w rd, rj, si14            # x[rd]=M(x[rj]+sext(si14[13:0] << 2))[31:0];   may unalign Except, (run with addu16i.d to accel access GOT)
+ldptr.d rd, rj, si14            # x[rd]=M(x[rj]+sext(si14[13:0] << 2))[63:0];   may unalign Except, (run with addu16i.d to accel access GOT)
+stptr.w rd, rj, si14            # M(x[rj]+sext(si14[13:0] << 2)) = x[rd][31:0]; may unalign Except, (run with addu16i.d to accel access GOT)
+stptr.d rd, rj, si14            # M(x[rj]+sext(si14[13:0] << 2)) = x[rd][63:0]; may unalign Except, (run with addu16i.d to accel access GOT)
+
+- preld[x]                  : Prefetch? Preload ?
+
+preld  hint, rj, si12           # Cache <= M(x[rj] + sext(si12)); hint=0, load; hint=8, store. hint>0 && < 8; nop.
+preldx hint, rj, rk             # Cache <= base + block_size * block_num[skip stride];
+
+== 边界检查访存
+
+- ld{gt/le}.{b/h/w/d}       : Load {Treat Than/Less and Equel} {Byte|Harfword|Word|Doubleword}
+- st{gt/le}.{b/h/w/d}       : Store {Great Than/Less and Equel} {Byte|Harfword|Word|Doubleword}
+
+ldgt.b rd, rj, rk               # if rj > rk; x[rd] = M(x[rj]); else Exception
+ldgt.h rd, rj, rk               # if rj > rk; x[rd] = M(x[rj]); else Exception
+ldgt.w rd, rj, rk               # if rj > rk; x[rd] = M(x[rj]); else Exception
+ldgt.d rd, rj, rk               # if rj > rk; x[rd] = M(x[rj]); else Exception
+ldle.b rd, rj, rk               # if rj <= rk; x[rd] = M(x[rj]); else Exception
+ldle.h rd, rj, rk               # if rj <= rk; x[rd] = M(x[rj]); else Exception
+ldle.w rd, rj, rk               # if rj <= rk; x[rd] = M(x[rj]); else Exception
+ldle.d rd, rj, rk               # if rj <= rk; x[rd] = M(x[rj]); else Exception
+
+stgt.b rd, rj, rk               # if rj > rk; M(x[rj]) = x[rd][7:0]; else Exception
+stgt.h rd, rj, rk               # if rj > rk; M(x[rj]) = x[rd][15:0]; else Exception
+stgt.w rd, rj, rk               # if rj > rk; M(x[rj]) = x[rd][31:0]; else Exception
+stgt.d rd, rj, rk               # if rj > rk; M(x[rj]) = x[rd][63:0]; else Exception
+stle.b rd, rj, rk               # if rj <= rk; M(x[rj]) = x[rd][7:0]; else Exception
+stle.h rd, rj, rk               # if rj <= rk; M(x[rj]) = x[rd][15:0]; else Exception
+stle.w rd, rj, rk               # if rj <= rk; M(x[rj]) = x[rd][31:0]; else Exception
+stle.d rd, rj, rk               # if rj <= rk; M(x[rj]) = x[rd][63:0]; else Exception
+
+== 原子访存
+
+- am{swap/add/and/or/xor/max/min}[_db].{w/d}
+- am{max/min}[_db].{wu/du}
+
+amswap.w rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = x[rk][31:0]; may ExcUnalign
+amswap.d rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = x[rk][63:0]; may ExcUnalign
+amadd.w  rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) + x[rk][31:0]; may ExcUnalign
+amadd.d  rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) + x[rk][63:0]; may ExcUnalign
+amand.w  rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) & x[rk][31:0]; may ExcUnalign
+amand.d  rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) & x[rk][63:0]; may ExcUnalign
+amor.w   rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) | x[rk][31:0]; may ExcUnalign
+amor.d   rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) | x[rk][63:0]; may ExcUnalign
+amxor.w  rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) ^ x[rk][31:0]; may ExcUnalign
+amxor.d  rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) ^ x[rk][63:0]; may ExcUnalign
+ammax.w  rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = max(M(x[rj]), x[rk][31:0]); may ExcUnalign
+ammax.d  rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = max(M(x[rj]), x[rk][63:0]); may ExcUnalign
+ammin.w  rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = min(M(x[rj]), x[rk][31:0]); may ExcUnalign
+ammin.d  rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = min(M(x[rj]), x[rk][63:0]); may ExcUnalign
+ammax.wu rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = max(M(x[rj])U, x[rk][31:0]U); may ExcUnalign
+ammax.du rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = max(M(x[rj])U, x[rk][63:0]U); may ExcUnalign
+ammin.wu rd,rk,rj               # x[rd] = M(x[rj])[31:0]; M(x[rj]) = min(M(x[rj])U, x[rk][31:0]U); may ExcUnalign
+ammin.du rd,rk,rj               # x[rd] = M(x[rj])[63:0]; M(x[rj]) = min(M(x[rj])U, x[rk][63:0]U); may ExcUnalign
+
+amswap_db.w rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = x[rk][31:0]; dbar; may ExcUnalign
+amswap_db.d rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = x[rk][63:0]; dbar; may ExcUnalign
+amadd_db.w  rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) + x[rk][31:0]; dbar; may ExcUnalign
+amadd_db.d  rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) + x[rk][63:0]; dbar; may ExcUnalign
+amand_db.w  rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) & x[rk][31:0]; dbar; may ExcUnalign
+amand_db.d  rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) & x[rk][63:0]; dbar; may ExcUnalign
+amor_db.w   rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) | x[rk][31:0]; dbar; may ExcUnalign
+amor_db.d   rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) | x[rk][63:0]; dbar; may ExcUnalign
+amxor_db.w  rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = M(x[rj]) ^ x[rk][31:0]; dbar; may ExcUnalign
+amxor_db.d  rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = M(x[rj]) ^ x[rk][63:0]; dbar; may ExcUnalign
+ammax_db.w  rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = max(M(x[rj]), x[rk][31:0]); dbar; may ExcUnalign
+ammax_db.d  rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = max(M(x[rj]), x[rk][63:0]); dbar; may ExcUnalign
+ammin_db.w  rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = min(M(x[rj]), x[rk][31:0]); dbar; may ExcUnalign
+ammin_db.d  rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = min(M(x[rj]), x[rk][63:0]); dbar; may ExcUnalign
+ammax_db.wu rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = max(M(x[rj])U, x[rk][31:0]U); dbar; may ExcUnalign
+ammax_db.du rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = max(M(x[rj])U, x[rk][63:0]U); dbar; may ExcUnalign
+ammin_db.wu rd,rk,rj            # dbar; x[rd] = M(x[rj])[31:0]; M(x[rj]) = min(M(x[rj])U, x[rk][31:0]U); dbar; may ExcUnalign
+ammin_db.du rd,rk,rj            # dbar; x[rd] = M(x[rj])[63:0]; M(x[rj]) = min(M(x[rj])U, x[rk][63:0]U); dbar; may ExcUnalign
+
+- ll.{w/d}                  : Load Linked Word/Doubleword
+- sc.{w/d}                  : Store Conditional Word/Doubleword
+
+ll.w rd, rj, si14               # x[rd]=sext(M(x[rj]+sext(si14[13:0] << 2))[31:0]);
+ll.d rd, rj, si14               # x[rd]=sext(M(x[rj]+sext(si14[13:0] << 2))[63:0]);
+sc.w rd, rj, si14               # M(x[rj]+sext(si14[13:0] << 2)) = x[rd][31:0];
+sc.d rd, rj, si14               # M(x[rj]+sext(si14[13:0] << 2)) = x[rd][63:0];
+
+== 栅障
+
+- {d/i}bar                  : {Data / Instruction } Bar ???
+
+dbar hint                       # sync load/store.
+ibar hint                       # sync in-core store and insp
+
+- crc[c].w.{b/h/w/d}.w
+
+crc.w.b.w  rd, rj, rk           # msg =x[rj][7:0]; res = x[rk][31:0]; loop(res += msg[7:0]); x[rd] = sext(res[31:0]);
+crc.w.h.w  rd, rj, rk
+crc.w.w.w  rd, rj, rk
+crc.w.d.w  rd, rj, rk
+crcc.w.b.w rd, rj, rk
+crcc.w.h.w rd, rj, rk
+crcc.w.w.w rd, rj, rk
+crcc.w.d.w rd, rj, rk
+
+== 杂项
+
+- syscall code              : System Call
+
+syscall code                    # syscall 0x0
+
+- break code                : Breakpoint
+
+break code                      #
+
+asrtle.d rj, rk                 # if(x[rj] > x[rk]) Except
+asrtgt.d rj, rk                 # if(x[rj] <= x[rk]) Except
+rdtimel.w rd, rj                # x[rd] = sext(Stable Counter[31:0]); x[rj] = Counter ID
+rdtimeh.w rd, rj                # x[rd] = sext(Stable Counter[63:0]); x[rj] = Counter ID
+rdtime.d  rd, rj                # x[rd] = Stable Counter[63:0]; x[rj] = Counter ID
+cpucfg rd, rj                   # x[rd] = Receive info,  x[rj] = Info ID
+
+== 浮点
+
+fadd.s fd, fj, fk               # f[fd] = f[fj][31:0] + f[fk][31:0]
+fadd.d fd, fj, fk               # f[fd] = f[fj][63:0] + f[fk][63:0]
+fsub.s fd, fj, fk               # f[fd] = f[fj][31:0] - f[fk][31:0]
+fsub.d fd, fj, fk               # f[fd] = f[fj][63:0] - f[fk][63:0]
+fmul.s fd, fj, fk               # f[fd] = f[fj][31:0] * f[fk][31:0]
+fmul.d fd, fj, fk               # f[fd] = f[fj][63:0] * f[fk][63:0]
+fdiv.s fd, fj, fk               # f[fd] = f[fj][31:0] / f[fk][31:0]
+fdiv.d fd, fj, fk               # f[fd] = f[fj][63:0] / f[fk][63:0]
+
+fmadd.s  fd, fj, fk             # f[fd] = f[fd][31:0] + f[fj][31:0] * f[fk][31:0]
+fmadd.d  fd, fj, fk             # f[fd] = f[fd][63:0] + f[fj][63:0] * f[fk][63:0]
+fmsub.s  fd, fj, fk             # f[fd] = f[fd][31:0] - f[fj][31:0] * f[fk][31:0]
+fmsub.d  fd, fj, fk             # f[fd] = f[fd][63:0] - f[fj][63:0] * f[fk][63:0]
+fnmadd.s fd, fj, fk             #
+fnmadd.d fd, fj, fk             #
+fnmsub.s fd, fj, fk             #
+fnmsub.d fd, fj, fk             #
+
+fmax.s fd, fj, fk               # f[fd] = max(f[fj][31:0], f[fk][31:0])
+fmax.d fd, fj, fk               # f[fd] = max(f[fj][63:0], f[fk][63:0])
+fmin.s fd, fj, fk               # f[fd] = min(f[fj][31:0], f[fk][31:0])
+fmin.d fd, fj, fk               # f[fd] = min(f[fj][63:0], f[fk][63:0])
+
+fmaxa.s fd, fj, fk              # a = abs(f[fj][31:0]); b = abs(f[fk][31:0]); if(a > b) f[fd] = f[fj][31:0]; else f[fd] = f[fk][31:0];
+fmaxa.d fd, fj, fk              # a = abs(f[fj][63:0]); b = abs(f[fk][63:0]); if(a > b) f[fd] = f[fj][63:0]; else f[fd] = f[fk][63:0];
+fmina.s fd, fj, fk              # a = abs(f[fj][31:0]); b = abs(f[fk][31:0]); if(a < b) f[fd] = f[fj][31:0]; else f[fd] = f[fk][31:0];
+fmina.d fd, fj, fk              # a = abs(f[fj][63:0]); b = abs(f[fk][63:0]); if(a < b) f[fd] = f[fj][63:0]; else f[fd] = f[fk][63:0];
+
+fabs.s fd, fj                   # f[fd] = abs(f[fj][31:0])
+fabs.d fd, fj                   # f[fd] = abs(f[fj][63:0])
+fneg.s fd, fj                   # f[fd] = ~(f[fj][31:0])
+fneg.d fd, fj                   # f[fd] = ~(f[fj][63:0])
+
+fsqrt.s  fd, fj                 # f[fd] = sqrt(f[fj][31:0])
+fsqrt.d  fd, fj                 # f[fd] = sqrt(f[fj][63:0])
+frecip.s fd, fj                 # f[fd] = 1.0/f[fj][31:0]
+frecip.d fd, fj                 # f[fd] = 1.0/f[fj][63:0]
+frsqrt.s fd, fj                 # f[fd] = 1.0/sqrt(f[fj][31:0])
+frsqrt.d fd, fj                 # f[fd] = 1.0/sqrt(f[fj][63:0])
+
+fscaleb.s   fd, fj, fk          # a = f[fj][31:0]; N = f[fk][31:0]; f[fd] = a*(2**N);
+fscaleb.d   fd, fj, fk          # a = f[fj][63:0]; N = f[fk][63:0]; f[fd] = a*(2**N);
+flogb.s     fd, fj              # N = f[fj][31:0]; f[fd] = lgN;  /* lg:log2 */
+flogb.d     fd, fj              # N = f[fj][63:0]; f[fd] = lgN;  /* lg:log2 */
+fcopysign.s fd, fj, fk          # f[fk][31] = f[fj][31]; f[fd] = f[fk][31:0];
+fcopysign.d fd, fj, fk          # f[fk][63] = f[fj][63]; f[fd] = f[fk][63:0];
+
+fclass.s fd, fj                 # check class of f[fj]
+fclass.d fd, fj                 # check class of f[fj]
+
+fcmp.cond.s cc, fj, fk          # cc <= compare(f[fj], f[fk])
+fcmp.cond.d cc, fj, fk          # cc <= compare(f[fj], f[fk])
+
+- fcvt.s.d fd, fj           : Floating Point Convert to Single Floating Point from Double Floating Point
+- fcvt.d.s fd, fj           : Floating Point Convert to Double Floating Point from Single Floating Point
+
+fcvt.s.d fd, fj                 # f[fd] = convert_single_from_double(f[fj][63:0])[31:0]
+fcvt.d.s fd, fj                 # f[fd] = convert_double_from_single(f[fj][31:0])[63:0]
+
+- ffint.s.w fd, fj          : Floating from int, word to single
+- ffint.s.l fd, fj          : Floating from int, long to single
+- ffint.d.w fd, fj          : Floating from int, word to double
+- ffint.d.l fd, fj          : Floating from int, long to double
+
+ffint.s.w fd, fj                # f[fd] = convert_to_single_float(x[fj][31:0])
+ffint.s.l fd, fj                # f[fd] = convert_to_single_float(x[fj][64:0])
+ffint.d.w fd, fj                # f[fd] = convert_to_double_float(x[fj][31:0])
+ffint.d.l fd, fj                # f[fd] = convert_to_double_float(x[fj][63:0])
+
+ftint.w.s fd, fj            : Floating to int, single to word
+ftint.w.d fd, fj            : Floating to int, double to word
+ftint.l.s fd, fj            : Floating to int, single to long
+ftint.l.d fd, fj            : Floating to int, double to long
+
+ftint.w.s fd, fj                # f[fd] = convert_to_short_int(f[fj][31:0])
+ftint.w.d fd, fj                # f[fd] = convert_to_long_int(f[fj][64:0])
+ftint.l.s fd, fj                # f[fd] = convert_to_short_int(f[fj][31:0])
+ftint.l.d fd, fj                # f[fd] = convert_to_long_int(f[fj][63:0])
+
+ftintrm.w.s fd, rj              # f[fd] = convert_to_short_int(f[fj][31:0]); 向负无穷方向舍入
+ftintrm.w.d fd, rj              # f[fd] = convert_to_short_int(f[fj][63:0]); 向负无穷方向舍入
+ftintrm.l.s fd, rj              # f[fd] = convert_to_long_int(f[fj][31:0]);  向负无穷方向舍入
+ftintrm.l.d fd, rj              # f[fd] = convert_to_long_int(f[fj][63:0]);  向负无穷方向舍入
+
+ftintrp.w.s fd, rj              # f[fd] = convert_to_short_int(f[fj][31:0]); 向正无穷方向舍入
+ftintrp.w.d fd, rj              # f[fd] = convert_to_short_int(f[fj][63:0]); 向正无穷方向舍入
+ftintrp.l.s fd, rj              # f[fd] = convert_to_long_int(f[fj][31:0]);  向正无穷方向舍入
+ftintrp.l.d fd, rj              # f[fd] = convert_to_long_int(f[fj][63:0]);  向正无穷方向舍入
+
+ftintrz.w.s fd, rj              # f[fd] = convert_to_short_int(f[fj][31:0]); 向零方向舍入
+ftintrz.w.d fd, rj              # f[fd] = convert_to_short_int(f[fj][63:0]); 向零方向舍入
+ftintrz.l.s fd, rj              # f[fd] = convert_to_long_int(f[fj][31:0]);  向零方向舍入
+ftintrz.l.d fd, rj              # f[fd] = convert_to_long_int(f[fj][63:0]);  向零方向舍入
+
+ftintrne.w.s fd, rj             # f[fd] = convert_to_short_int(f[fj][31:0]); 向最近的偶数舍入
+ftintrne.w.d fd, rj             # f[fd] = convert_to_short_int(f[fj][63:0]); 向最近的偶数舍入
+ftintrne.l.s fd, rj             # f[fd] = convert_to_long_int(f[fj][31:0]);  向最近的偶数舍入
+ftintrne.l.d fd, rj             # f[fd] = convert_to_long_int(f[fj][63:0]);  向最近的偶数舍入
+
+frint.s fd, fj                  # f[fd] = convert_to_int_float(f[fj][31:0]); according FCSR
+frint.d fd, fj                  # f[fd] = convert_to_int_float(f[fj][63:0]); according FCSR
+
+fmov.s fd, fj                   # f[fd] = f[fj][31:0]
+fmov.d fd, fj                   # f[fd] = f[fj][63:0]
+
+fsel fd, fj, fk, ca             # if (ca ==0) f[fd] = f[fj]; else f[fd] = f[fk]
+
+- movgr2fr[h].w             : Move General Register to Floating Point Register Harfword / Word ???
+- movgr2fr.d                : Move General Register to Floating Point Register Doubleword ???
+
+movgr2fr.w  fd, rj              # f[fd][31:0] = x[rj][31:0]
+movgr2fr.d  fd, rj              # f[fd][31:0] = x[rj][63:0]
+movgr2frh.w fd, rj              # f[fd][63:32] = x[rj][31:0]
+
+movfr2gr.s rd, fj               # x[fd] = sext(f[rj][31:0])
+movfr2gr.d rd, fj               # x[fd] = f[rj][63:0]
+movfrh2gr.s rd, fj              # x[fd] = sext(f[rj][63:32])
+
+movgr2fcsr fcsr, rj             # FCSR <= x[rj][31:0]; may Exception
+movfcsr2gr rd, fcsr             # x[rd] <= FCSR
+
+movfr2cf cd, fj                 # CD = f[fj][0]
+movcf2fr fd, cj                 # f[fj][0] = CD
+
+bceqz cj, offs21                # if(cj == 0) goto PC + sext(offs21[20:0] << 2)
+bcnez cj, offs21                # if(cj != 0) goto PC + sext(offs21[20:0] << 2)
+
+fld.s fd, rj, si12              # f[fd][31:0] = M(x[rj] + sext(si12[11:0]))[31:0]; Unalign Except
+fld.d fd, rj, si12              # f[fd] = M(x[rj] + sext(si12[11:0]))[63:0]; Unalign Except
+fst.s fd, rj, si12              # M(x[rj] + sext(si12[11:0])) = f[fd][31:0]; Unalign Except
+fst.d fd, rj, si12              # M(x[rj] + sext(si12[11:0])) = f[fd][63:0]; Unalign Except
+
+fldx.s fd, rj, rk               # f[fd][31:0] = M(x[rj] + x[rk])[31:0]; Unalign Except
+fldx.d fd, rj, rk               # f[fd] = M(x[rj] + x[rk])[63:0]; Unalign Except
+fstx.s fd, rj, rk               # M(x[rj] + x[rk]) = f[fd][31:0]; Unalign Except
+fstx.d fd, rj, rk               # M(x[rj] + x[rk]) = f[fd][63:0]; Unalign Except
+
+fldgt.s fd, rj, rk              # if(x[rj] > x[rk]) f[fd] = M(x[rj])[31:0]
+fldgt.d fd, rj, rk              # if(x[rj] > x[rk]) f[fd] = M(x[rj])[63:0]
+fldle.s fd, rj, rk              # if(x[rj] <= x[rk]) f[fd] = M(x[rj])[31:0]
+fldle.d fd, rj, rk              # if(x[rj] <= x[rk]) f[fd] = M(x[rj])[63:0]
+
+fstgt.s fd, rj, rk              # if(x[rj] > x[rk]) M(x[rj]) = f[fd][31:0]
+fstgt.d fd, rj, rk              # if(x[rj] > x[rk]) M(x[rj]) = f[fd][63:0]
+
+fstle.s fd, rj, rk              # if(x[rj] <= x[rk]) M(x[rj]) = f[fd][31:0]
+fstle.d fd, rj, rk              # if(x[rj] <= x[rk]) M(x[rj]) = f[fd][63:0]
+
+csrrd rd, csr_num               #
+csrwr rd, csr_num               #
+csrxchg rd, csr_num             #
+
+iocsrrd.b rd, rj                #
+iocsrrd.h rd, rj                #
+iocsrrd.w rd, rj                #
+iocsrrd.d rd, rj                #
+
+iocsrwr.b rd, rj                #
+iocsrwr.h rd, rj                #
+iocsrwr.w rd, rj                #
+iocsrwr.d rd, rj                #
+
+- cache                     : Perform Cache Operation
+
+cache op, rj, si12              #
+
+- tlbp                      : Probe TLB for Matching Entry
+- tlbr                      : Read Indexed TLB Entry
+- tlb{wi/wr}                : Write Indexed/Random TLB Entry
+- tlb{inv/flush}
+- inVTLB
+
+tlbp                            #
+tlbr                            #
+tlbwi                           #
+tlbwr                           #
+tlbinv                          #
+tlbflush                        #
+inVTLB op, rj, rk               #
+
+lddir rd, rj, level             #
+ldpte rj, req                   #
+
+- eret                      : Exception Return
+
+eret                            #
+
+- dbgcall                   : Debug Call ???
+
+dbgcall code                    #
+
+- wait                      : Enter Standby Mode
+
+wait hint                       #

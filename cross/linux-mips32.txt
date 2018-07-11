@@ -1,0 +1,18 @@
+[binaries]
+c = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-gcc'
+cpp = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-g++'
+ar = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-ar'
+strip = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-strip'
+#exe_wrapper = 'qemu-mipsel'
+ld = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-ld'
+as = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/mips-linux-gnu-as'
+
+[properties]
+rpath = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/mips-linux-gnu/libc/lib/'
+ldpath = '/dev/shm/mips-loongson-gcc7.3-linux-gnu/2019.06-29/mips-linux-gnu/libc/lib/ld.so.1'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'mips32'
+cpu = 'mips32r2'
+endian = 'little'

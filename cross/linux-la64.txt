@@ -1,0 +1,18 @@
+[binaries]
+c = '/usr/bin/loongarch64-linux-gnu-gcc'
+cpp = '/usr/bin/loongarch64-linux-gnu-g++'
+ar = '/usr/bin/loongarch64-linux-gnu-ar'
+strip = '/usr/bin/loongarch64-linux-gnu-strip'
+#exe_wrapper = 'qemu-loongarch64'
+ld = '/usr/bin/loongarch64-linux-gnu-ld'
+as = '/usr/bin/loongarch64-linux-gnu-as'
+
+[properties]
+rpath = '/usr/loongarch64-linux-gnu/lib/'
+ldpath = '/usr/loongarch64-linux-gnu/lib/ld-2.28.so'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'loongarch64'
+cpu = 'loongarch64'
+endian = 'little'

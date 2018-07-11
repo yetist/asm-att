@@ -1,0 +1,18 @@
+[binaries]
+c = '/usr/bin/aarch64-linux-gnu-gcc'
+cpp = '/usr/bin/aarch64-linux-gnu-g++'
+ar = '/usr/bin/aarch64-linux-gnu-ar'
+strip = '/usr/bin/aarch64-linux-gnu-strip'
+#exe_wrapper = 'qemu-aarch64'
+ld = '/usr/bin/aarch64-linux-gnu-ld'
+as = '/usr/bin/aarch64-linux-gnu-as'
+
+[properties]
+rpath = '/usr/aarch64-linux-gnu/lib/'
+ldpath = '/usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'aarch64'
+cpu = 'rv64gc'
+endian = 'little'
