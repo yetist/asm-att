@@ -5,7 +5,7 @@ if [ -z $CC ];then
 fi
 
 if [ ! -f syscalls.csv ];then
-    wget https://github.com/seccomp/libseccomp/raw/master/src/syscalls.csv
+    wget https://github.com/seccomp/libseccomp/raw/main/src/syscalls.csv
 fi
 
 defined(){
