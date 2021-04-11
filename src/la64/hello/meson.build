@@ -1,6 +1,6 @@
 static_sources = [
   'hello.S',
-  'hello2.S',
+  #'hello2.S',
 ]
 
 dynamic_sources = [

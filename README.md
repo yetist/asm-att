@@ -1,8 +1,10 @@
 # 编译
 
+编译方法
+
 ```
-meson _build_i686 --cross-file cross/linux-i686.txt
-ninja -C _build_i686 -v
+meson _build_<arch> --cross-file cross/linux-<arch>.txt
+ninja -C _build_<arch> -v
 ```
 
 ```
@@ -21,16 +23,6 @@ ninja -C _build_riscv -v
 - rcx - 第四个参数
 - r8 - 第五个参数
 - r9 - 第六
-
-## MIPS
-
-如果不添加编译参数,则默认编译的目标文件为"mips32r2 mabi=32"
-
-如果想要编译其它类型目标文件需要添加参数.
-
-例如,如果需要编译mips64r2 n64的目标文件:
-
-添加参数"-mips64r2 -mabi=64".
 
 ## qemu user mode
 

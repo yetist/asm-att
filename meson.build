@@ -1,4 +1,4 @@
-project('asm-examples', 'c')
+project('asm-att', 'c')
 
 c_args = []
 #lib_link_args = []
@@ -55,16 +55,5 @@ if host_machine.cpu_family() == 'x86' or host_machine.cpu_family() == 'x86_64'
       '@INPUT@'])
 endif
 
-subdir_dict={
-  'loongarch64': 'la64',
-  'x86_64': 'x64',
-}
-
-if host_machine.cpu_family() == 'loongarch64'
-  subdir('la64')
-elif host_machine.cpu_family() == 'x86_64'
-  subdir('x64')
-else
-  subdir(host_machine.cpu_family())
-endif
 subdir('conf')
+subdir('src')
