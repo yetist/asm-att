@@ -31,6 +31,9 @@ echo ':qemu-riscv64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x
 echo ':qemu-riscv64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xf3\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-riscv64:' > /etc/binfmt.d/qemu-riscv64.conf
 echo ':qemu-loongarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x02\x01:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-loongarch64:' > /etc/binfmt.d/qemu-loongarch64.conf
 
+alias riscv-gcc='riscv64-linux-gnu-gcc -Wl,-dynamic-linker /usr/riscv64-linux-gnu/lib/ld-linux-riscv64-lp64d.so.1 -Wl,-rpath=/usr/riscv64-linux-gnu/lib/ -lc'
+alias aarch64-gcc='aarch64-linux-gnu-gcc -Wl,-dynamic-linker /usr/aarch64-linux-gnu/lib/ld-linux-aarch64.so.1 -Wl,-rpath=/usr/aarch64-linux-gnu/lib -lc'
+
 ## debug
 
 qemu-xxx -g 1234 -singlestep ./a.out
