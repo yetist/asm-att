@@ -2,6 +2,8 @@
 
 == 寄存器
 
+助记符名称
+
 +--------------------------------------------+
 | 助记符  编号 | 助记符  编号 | 助记符  编号 |
 +--------------------------------------------+
@@ -19,19 +21,50 @@
 |              |  t8     R20  |  s8     R31  |
 +--------------------------------------------+
 
+寄存器操作数槽位
+
++---------------------------------------------------------+
+| 槽位名称 | 起始位序号     | 位域宽度 | 寄存器类别       |
++----------+---------------------------+------------------+
+| D        | 0              | 5        | 通用寄存器       |
+| J        | 5              | 5        | 通用寄存器       |
+| K        | 10             | 5        | 通用寄存器       |
+| A        | 15             | 5        | 通用寄存器       |
+| C        | 由位置标记指定 | 3        | 浮点条件码寄存器 |
+| F        | 由位置标记指定 | 5        | 浮点寄存器       |
++---------------------------------------------------------+
+
+位置标记
+
++----------------------------------------+
+| 位置标记名 | 代表的位序号 | 备注       |
++---------------------------+------------+
+| d          | 0            |            |
+| j          | 5            |            |
+| k          | 10           |            |
+| a          | 15           |            |
+| m          | 16           | middle     |
++----------------------------------------+
+| S          |              | signed     |
+| U          |              | unsigned   |
++----------------------------------------+
+
+立即数表示格式: `符号(S/U) 1或多个立即数槽`
+
+立即数槽表示格式: `位置标记 宽度`，宽度即为十进制阿拉伯数字。
 
 == 算术运算类
 
-- add.{w/d}                 : Add Word/Doubleword
-- sub.{w/d}                 : Substract Word/Doubleword
+- add.{w/d}                 : DJK : Add Word/Doubleword
+- sub.{w/d}                 : DJK : Substract Word/Doubleword
 
 add.w rd, rj, rk                # x[rd] = sext((x[rj] + x[rk]))
 add.d rd, rj, rk                # x[rd] = x[rj] + x[rk]
 sub.w rd, rj, rk                # x[rd] = sext(x[rj] - x[rk])
 sub.d rd, rj, rk                # x[rd] = x[rj] - x[rk]
 
-- addi.{w/d}                : Add Immediate Word / Doubleword
-- addu16i.d                 : Add Upper 16 Immediate Doubleword
+- addi.{w/d}                : DJSk12 : Add Immediate Word / Doubleword
+- addu16i.d                 : DJSk16 : Add Upper 16 Immediate Doubleword
 
 addi.w rd, rj, si12             # x[rd] = sext(x[rj] + sext(si12))
 addi.d rd, rj, si12             # x[rd] = x[rj] + sext(si12)
@@ -596,3 +629,378 @@ dbgcall code                    #
 - wait                      : Enter Standby Mode
 
 wait hint                       #
+
+-- 规范格式名
+
+| clo.w | DJ
+| clz.w | DJ
+| cto.w | DJ
+| ctz.w | DJ
+| clo.d | DJ
+| clz.d | DJ
+| cto.d | DJ
+| ctz.d | DJ
+| revb.2h | DJ
+| revb.4h | DJ
+| revb.2w | DJ
+| revb.d | DJ
+| revh.2w | DJ
+| revh.d | DJ
+| bitrev.4b | DJ
+| bitrev.8b | DJ
+| bitrev.w | DJ
+| bitrev.d | DJ
+| ext.w.h | DJ
+| ext.w.b | DJ
+| rdtimel.w | DJ
+| rdtimeh.w | DJ
+| rdtime.d | DJ
+| cpucfg | DJ
+| asrtle.d | JK
+| asrtgt.d | JK
+| alsl.w | DJKUa2
+| alsl.wu | DJKUa2
+| bytepick.w | DJKUa2
+| bytepick.d | DJKUa3
+| add.w | DJK
+| add.d | DJK
+| sub.w | DJK
+| sub.d | DJK
+| slt | DJK
+| sltu | DJK
+| maskeqz | DJK
+| masknez | DJK
+| nor | DJK
+| and | DJK
+| or | DJK
+| xor | DJK
+| orn | DJK
+| andn | DJK
+| sll.w | DJK
+| srl.w | DJK
+| sra.w | DJK
+| sll.d | DJK
+| srl.d | DJK
+| sra.d | DJK
+| rotr.w | DJK
+| rotr.d | DJK
+| mul.w | DJK
+| mulh.w | DJK
+| mulh.wu | DJK
+| mul.d | DJK
+| mulh.d | DJK
+| mulh.du | DJK
+| mulw.d.w | DJK
+| mulw.d.wu | DJK
+| div.w | DJK
+| mod.w | DJK
+| div.wu | DJK
+| mod.wu | DJK
+| div.d | DJK
+| mod.d | DJK
+| div.du | DJK
+| mod.du | DJK
+| crc.w.b.w | DJK
+| crc.w.h.w | DJK
+| crc.w.w.w | DJK
+| crc.w.d.w | DJK
+| crcc.w.b.w | DJK
+| crcc.w.h.w | DJK
+| crcc.w.w.w | DJK
+| crcc.w.d.w | DJK
+| break | Ud15
+| dbcl | Ud15
+| syscall | Ud15
+| alsl.d | DJKUa2
+| slli.w | DJUk5
+| slli.d | DJUk6
+| srli.w | DJUk5
+| srli.d | DJUk6
+| srai.w | DJUk5
+| srai.d | DJUk6
+| rotri.w | DJUk5
+| rotri.d | DJUk6
+| bstrins.w | DJUk5Um5
+| bstrpick.w | DJUk5Um5
+| bstrins.d | DJUk6Um6
+| bstrpick.d | DJUk6Um6
+| fadd.s | FdFjFk
+| fadd.d | FdFjFk
+| fsub.s | FdFjFk
+| fsub.d | FdFjFk
+| fmul.s | FdFjFk
+| fmul.d | FdFjFk
+| fdiv.s | FdFjFk
+| fdiv.d | FdFjFk
+| fmax.s | FdFjFk
+| fmax.d | FdFjFk
+| fmin.s | FdFjFk
+| fmin.d | FdFjFk
+| fmaxa.s | FdFjFk
+| fmaxa.d | FdFjFk
+| fmina.s | FdFjFk
+| fmina.d | FdFjFk
+| fscaleb.s | FdFjFk
+| fscaleb.d | FdFjFk
+| fcopysign.s | FdFjFk
+| fcopysign.d | FdFjFk
+| fabs.s | FdFj
+| fabs.d | FdFj
+| fneg.s | FdFj
+| fneg.d | FdFj
+| flogb.s | FdFj
+| flogb.d | FdFj
+| fclass.s | FdFj
+| fclass.d | FdFj
+| fsqrt.s | FdFj
+| fsqrt.d | FdFj
+| frecip.s | FdFj
+| frecip.d | FdFj
+| frsqrt.s | FdFj
+| frsqrt.d | FdFj
+| fmov.s | FdFj
+| fmov.d | FdFj
+| movgr2fr.w | FdJ
+| movgr2fr.d | FdJ
+| movgr2frh.w | FdJ
+| movfr2gr.s | DFj
+| movfr2gr.d | DFj
+| movfrh2gr.s | DFj
+| movgr2fcsr | JUd5
+| movfcsr2gr | DUj5
+| movfr2cf | CdFj
+| movcf2fr | FdCj
+| movgr2cf | CdJ
+| movcf2gr | DCj
+| fcvt.s.d | FdFj
+| fcvt.d.s | FdFj
+| ftintrm.w.s | FdFj
+| ftintrm.w.d | FdFj
+| ftintrm.l.s | FdFj
+| ftintrm.l.d | FdFj
+| ftintrp.w.s | FdFj
+| ftintrp.w.d | FdFj
+| ftintrp.l.s | FdFj
+| ftintrp.l.d | FdFj
+| ftintrz.w.s | FdFj
+| ftintrz.w.d | FdFj
+| ftintrz.l.s | FdFj
+| ftintrz.l.d | FdFj
+| ftintrne.w.s | FdFj
+| ftintrne.w.d | FdFj
+| ftintrne.l.s | FdFj
+| ftintrne.l.d | FdFj
+| ftint.w.s | FdFj
+| ftint.w.d | FdFj
+| ftint.l.s | FdFj
+| ftint.l.d | FdFj
+| ffint.s.w | FdFj
+| ffint.s.l | FdFj
+| ffint.d.w | FdFj
+| ffint.d.l | FdFj
+| frint.s | FdFj
+| frint.d | FdFj
+| slti | DJSk12
+| sltui | DJSk12
+| addi.w | DJSk12
+| addi.d | DJSk12
+| lu52i.d | DJSk12
+| andi | DJUk12
+| ori | DJUk12
+| xori | DJUk12
+| csrxchg | DJUk14
+| cacop | JUd5Sk12
+| lddir | DJUk8
+| ldpte | JUk8
+| iocsrrd.b | DJ
+| iocsrrd.h | DJ
+| iocsrrd.w | DJ
+| iocsrrd.d | DJ
+| iocsrwr.b | DJ
+| iocsrwr.h | DJ
+| iocsrwr.w | DJ
+| iocsrwr.d | DJ
+| tlbclr | EMPTY
+| tlbflush | EMPTY
+| tlbsrch | EMPTY
+| tlbrd | EMPTY
+| tlbwr | EMPTY
+| tlbfill | EMPTY
+| ertn | EMPTY
+| idle | Ud15
+| invtlb | JKUd5
+| fmadd.s | FdFjFkFa
+| fmadd.d | FdFjFkFa
+| fmsub.s | FdFjFkFa
+| fmsub.d | FdFjFkFa
+| fnmadd.s | FdFjFkFa
+| fnmadd.d | FdFjFkFa
+| fnmsub.s | FdFjFkFa
+| fnmsub.d | FdFjFkFa
+| fcmp.caf.s | CdFjFk
+| fcmp.saf.s | CdFjFk
+| fcmp.clt.s | CdFjFk
+| fcmp.slt.s | CdFjFk
+| fcmp.ceq.s | CdFjFk
+| fcmp.seq.s | CdFjFk
+| fcmp.cle.s | CdFjFk
+| fcmp.sle.s | CdFjFk
+| fcmp.cun.s | CdFjFk
+| fcmp.sun.s | CdFjFk
+| fcmp.cult.s | CdFjFk
+| fcmp.sult.s | CdFjFk
+| fcmp.cueq.s | CdFjFk
+| fcmp.sueq.s | CdFjFk
+| fcmp.cule.s | CdFjFk
+| fcmp.sule.s | CdFjFk
+| fcmp.cne.s | CdFjFk
+| fcmp.sne.s | CdFjFk
+| fcmp.cor.s | CdFjFk
+| fcmp.sor.s | CdFjFk
+| fcmp.cune.s | CdFjFk
+| fcmp.sune.s | CdFjFk
+| fcmp.caf.d | CdFjFk
+| fcmp.saf.d | CdFjFk
+| fcmp.clt.d | CdFjFk
+| fcmp.slt.d | CdFjFk
+| fcmp.ceq.d | CdFjFk
+| fcmp.seq.d | CdFjFk
+| fcmp.cle.d | CdFjFk
+| fcmp.sle.d | CdFjFk
+| fcmp.cun.d | CdFjFk
+| fcmp.sun.d | CdFjFk
+| fcmp.cult.d | CdFjFk
+| fcmp.sult.d | CdFjFk
+| fcmp.cueq.d | CdFjFk
+| fcmp.sueq.d | CdFjFk
+| fcmp.cule.d | CdFjFk
+| fcmp.sule.d | CdFjFk
+| fcmp.cne.d | CdFjFk
+| fcmp.sne.d | CdFjFk
+| fcmp.cor.d | CdFjFk
+| fcmp.sor.d | CdFjFk
+| fcmp.cune.d | CdFjFk
+| fcmp.sune.d | CdFjFk
+| fsel | FdFjFkCa
+| addu16i.d | DJSk16
+| lu12i.w | DSj20
+| lu32i.d | DSj20
+| pcaddi | DSj20
+| pcalau12i | DSj20
+| pcaddu12i | DSj20
+| pcaddu18i | DSj20
+| ll.w | DJSk14
+| sc.w | DJSk14
+| ll.d | DJSk14
+| sc.d | DJSk14
+| ldptr.w | DJSk14
+| stptr.w | DJSk14
+| ldptr.d | DJSk14
+| stptr.d | DJSk14
+| ld.b | DJSk12
+| ld.h | DJSk12
+| ld.w | DJSk12
+| ld.d | DJSk12
+| st.b | DJSk12
+| st.h | DJSk12
+| st.w | DJSk12
+| st.d | DJSk12
+| ld.bu | DJSk12
+| ld.hu | DJSk12
+| ld.wu | DJSk12
+| preld | JUd5Sk12
+| fld.s | FdJSk12
+| fst.s | FdJSk12
+| fld.d | FdJSk12
+| fst.d | FdJSk12
+| ldx.b | DJK
+| ldx.h | DJK
+| ldx.w | DJK
+| ldx.d | DJK
+| stx.b | DJK
+| stx.h | DJK
+| stx.w | DJK
+| stx.d | DJK
+| ldx.bu | DJK
+| ldx.hu | DJK
+| ldx.wu | DJK
+| preldx | JKUd5
+| fldx.s | FdJK
+| fldx.d | FdJK
+| fstx.s | FdJK
+| fstx.d | FdJK
+| amswap.w | DJK
+| amswap.d | DJK
+| amadd.w | DJK
+| amadd.d | DJK
+| amand.w | DJK
+| amand.d | DJK
+| amor.w | DJK
+| amor.d | DJK
+| amxor.w | DJK
+| amxor.d | DJK
+| ammax.w | DJK
+| ammax.d | DJK
+| ammin.w | DJK
+| ammin.d | DJK
+| ammax.wu | DJK
+| ammax.du | DJK
+| ammin.wu | DJK
+| ammin.du | DJK
+| amswap_db.w | DJK
+| amswap_db.d | DJK
+| amadd_db.w | DJK
+| amadd_db.d | DJK
+| amand_db.w | DJK
+| amand_db.d | DJK
+| amor_db.w | DJK
+| amor_db.d | DJK
+| amxor_db.w | DJK
+| amxor_db.d | DJK
+| ammax_db.w | DJK
+| ammax_db.d | DJK
+| ammin_db.w | DJK
+| ammin_db.d | DJK
+| ammax_db.wu | DJK
+| ammax_db.du | DJK
+| ammin_db.wu | DJK
+| ammin_db.du | DJK
+| dbar | Ud15
+| ibar | Ud15
+| fldgt.s | FdJK
+| fldgt.d | FdJK
+| fldle.s | FdJK
+| fldle.d | FdJK
+| fstgt.s | FdJK
+| fstgt.d | FdJK
+| fstle.s | FdJK
+| fstle.d | FdJK
+| ldgt.b | DJK
+| ldgt.h | DJK
+| ldgt.w | DJK
+| ldgt.d | DJK
+| ldle.b | DJK
+| ldle.h | DJK
+| ldle.w | DJK
+| ldle.d | DJK
+| stgt.b | DJK
+| stgt.h | DJK
+| stgt.w | DJK
+| stgt.d | DJK
+| stle.b | DJK
+| stle.h | DJK
+| stle.w | DJK
+| stle.d | DJK
+| beqz | JSd5k16
+| bnez | JSd5k16
+| bceqz | CjSd5k16
+| bcnez | CjSd5k16
+| jirl | DJSk16
+| b | Sd10k16
+| bl | Sd10k16
+| beq | DJSk16
+| bne | DJSk16
+| bgt | DJSk16
+| ble | DJSk16
+| bgtu | DJSk16
+| bleu | DJSk16
