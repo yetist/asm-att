@@ -1,0 +1,509 @@
+﻿/* vi: set ft=c sw=4 ts=4: */
+
+1. 新增重定位类型
+
+/*
+ * 18 位相对 PC 跳转
+R_LARCH_B16 64
+(*(uint32_t *) PC) [25 ... 10] = (S+A-PC) [17 ... 2]
+
+带 18 位有符号数溢出和4字节对齐检测功能
+*/
+#define R_LARCH_B16 64
+
+/*
+ * 23 位相对 PC 跳转
+R_LARCH_B21 65
+(*(uint32_t *) PC) [4 ... 0] = (S+A-PC) [22 ... 18]
+(*(uint32_t *) PC) [25 ... 10] = (S+A-PC) [17 ... 2]
+
+带 23 位有符号数溢出和4字节对齐检测功能
+*/
+#define R_LARCH_B21 65
+
+/*
+ * 28 位相对 PC 跳转
+R_LARCH_B26 66
+
+(*(uint32_t *) PC) [9 ... 0] = (S+A-PC) [27 ... 18]
+(*(uint32_t *) PC) [25 ... 10] = (S+A-PC) [17 ... 2]
+
+带 28 位有符号数溢出和4字节对齐检测功能
+*/
+#define R_LARCH_B26 66
+
+/*
+ * 32/64 位绝对地址的 [31 ... 12] 位
+R_LARCH_ABS_HI20 67
+
+(*(uint32_t *) PC) [24 ... 5] = (S+A) [31 ... 12]
+*/
+#define R_LARCH_ABS_HI20 67
+
+/*
+ * 32/64 位绝对地址的  [11 ... 0]  位
+R_LARCH_ABS_LO12 68
+
+(*(uint32_t *) PC) [21 ... 10] = (S+A) [11 ... 0]
+*/
+#define R_LARCH_ABS_LO12 68
+
+/*
+ * 64 位绝对地址 [51 ... 32] 位
+R_LARCH_ABS64_LO20 69
+
+(*(uint32_t *) PC) [24 ... 5] = (S+A) [51 ... 32]
+*/
+#define R_LARCH_ABS64_LO20 69
+
+/*
+ * 64 位绝对地址 [63 ... 52] 位
+R_LARCH_ABS64_HI12 70
+
+(*(uint32_t *) PC) [21 ... 10] = (S+A) [63 ... 52]
+*/
+#define R_LARCH_ABS64_HI12 70
+
+/*
+ * 相对 PC 偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_PCALA_HI20 71
+
+(*(uint32_t *) PC) [24 ... 5] = (((S+A) & ~0xfff) - (PC & ~0xfff)) [31 ... 12]
+
+注意：所有相对 PC 偏移计算都不包含低12位。
+*/
+#define R_LARCH_PCALA_HI20 71
+
+/*
+ * 32/64 位符号地址的 [11 ... 0] 位
+R_LARCH_PCALA_LO12 72
+
+(*(uint32_t *) PC) [21 ... 10] = (S+A) [11 ... 0]
+*/
+#define R_LARCH_PCALA_LO12 72
+
+/*
+ * 相对 PC 偏移 64 位的 [51 ... 32] 位
+R_LARCH_PCALA64_LO20 73
+
+(*(uint32_t *) PC) [24 ... 5] = (S+A - (PC & ~0xffffffff)) [51 ... 32]
+*/
+#define R_LARCH_PCALA64_LO20 73
+
+/*
+ * 相对 PC 偏移 64 位的 [63 ... 52] 位
+R_LARCH_PCALA64_HI12 74
+
+(*(uint32_t *) PC) [21 ... 10] = (S+A - (PC & ~0xffffffff)) [63 ... 52]
+*/
+#define R_LARCH_PCALA64_HI12 74
+
+/*
+ * GOT 表项相对 PC 偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_GOT_PC_HI20 75
+
+(*(uint32_t *) PC) [24 ... 5] = (((GP+G) & ~0xfff) - (PC & ~0xfff)) [31 ... 12]
+*/
+#define R_LARCH_GOT_PC_HI20 75
+
+/*
+ * GOT 表项 32/64 地址的 [11 ... 0] 位
+R_LARCH_GOT_PC_LO12 76
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+G) [11 ... 0]
+*/
+#define R_LARCH_GOT_PC_LO12 76
+
+/*
+ * GOT 表项相对 PC 偏移 64 位的 [51 ... 32] 位
+R_LARCH_GOT64_PC_LO20 77
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+G - (PC & ~0xffffffff)) [51 ... 32]
+*/
+#define R_LARCH_GOT64_PC_LO20 77
+
+/*
+ * GOT 表项相对 PC 偏移 64 位的 [63 ... 52] 位
+R_LARCH_GOT64_PC_HI12 78
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+G - (PC & ~0xffffffff)) [63 ... 52]
+*/
+#define R_LARCH_GOT64_PC_HI12 78
+
+/*
+ * GOT 表项 32/64 位绝对地址的 [31 ... 12] 位
+R_LARCH_GOT_HI20 79
+
+(uint32_t *) PC) [24:5] = (GP+G) [31:12]
+*/
+#define R_LARCH_GOT_HI20 79
+
+/*
+ * GOT 表项 32/64 位绝对地址的 [11 ... 0] 位
+R_LARCH_GOT_LO12 80
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+G) [11 ... 0]
+*/
+#define R_LARCH_GOT_LO12 80
+
+/*
+ * GOT 表项 64 位绝对地址的 [51 ... 32] 位
+R_LARCH_GOT64_LO20 81
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+G) [51 ... 32]
+*/
+#define R_LARCH_GOT64_LO20 81
+
+/*
+ * GOT 表项 64 位绝对地址的 [63 ... 52] 位
+R_LARCH_GOT64_HI12 82
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+G) [63 ... 52]
+*/
+#define R_LARCH_GOT64_HI12 82
+
+/*
+ * TLS LE 符号相对 TP 寄存器偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_TLS_LE_HI20 83
+
+(*(uint32_t *) PC) [24 ... 5] = T [31 ... 12]
+*/
+#define R_LARCH_TLS_LE_HI20 83
+
+/*
+ * TLS LE 符号相对 TP 寄存器偏移 32/64 位的 [11 ... 0] 位
+R_LARCH_TLS_LE_LO12 84
+
+(*(uint32_t *) PC) [21 ... 10] = T [11 ... 0]
+*/
+#define R_LARCH_TLS_LE_LO12 84
+
+/*
+ * TLS LE 符号相对 TP 寄存器偏移 64 位的 [51 ... 32] 位
+R_LARCH_TLS_LE64_LO20 85
+
+(*(uint32_t *) PC) [24 ... 5] = T [51 ... 32]
+*/
+#define R_LARCH_TLS_LE64_LO20 85
+
+/*
+ * TLS LE 符号相对 TP 寄存器偏移 64 位的 [63 ... 52] 位
+R_LARCH_TLS_LE64_HI12 86
+
+(*(uint32_t *) PC) [21 ... 10] = T [63 ... 52]
+*/
+#define R_LARCH_TLS_LE64_HI12 86
+
+/*
+ * TLS IE 符号 GOT 相表项对 PC 偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_TLS_IE_PC_HI20 87
+
+(*(uint32_t *) PC) [24 ... 5] = (((GP+IE) & ~0xfff) - (PC & ~0xfff)) [31 ... 12]
+*/
+#define R_LARCH_TLS_IE_PC_HI20 87
+
+/*
+ * TLS IE 符号 GOT 表项 32/64 位地址的 [11 ... 0] 位
+R_LARCH_TLS_IE_PC_LO12 88
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+IE) [11 ... 0]
+*/
+#define R_LARCH_TLS_IE_PC_LO12 88
+
+/*
+ * TLS IE 符号 GOT 表项相对 PC 偏移 64 位的 [51 ... 32] 位
+R_LARCH_TLS_IE64_PC_LO20 89
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+IE - (PC & ~0xffffffff)) [51 ... 32]
+*/
+#define R_LARCH_TLS_IE64_PC_LO20 89
+
+/*
+ * TLS IE 符号 GOT 表项相对 PC 偏移 64 位的 [63 ... 52] 位
+R_LARCH_TLS_IE64_PC_HI12 90
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+IE - (PC & ~0xffffffff)) [63 ... 52]
+*/
+#define R_LARCH_TLS_IE64_PC_HI12 90
+
+/*
+ * TLS IE 符号 GOT 表项 32/64 位绝对地址的 [31 ... 12] 位
+R_LARCH_TLS_IE_HI20 91
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+IE) [31 ... 12]
+*/
+#define R_LARCH_TLS_IE_HI20 91
+
+/*
+ * TLS IE 符号 GOT 表项 32/64 位绝对地址的 [11 ... 0] 位
+R_LARCH_TLS_IE_LO12 92
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+IE) [11 ... 0]
+*/
+#define R_LARCH_TLS_IE_LO12 92
+
+/*
+ * TLS IE 符号 GOT 表项 64 位绝对地址的 [51 ... 32] 位
+R_LARCH_TLS_IE64_LO20 93
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+IE) [51 ... 32]
+*/
+#define R_LARCH_TLS_IE64_LO20 93
+
+/*
+ * TLS IE 符号 GOT 表项 64 位绝对地址的 [63 ... 52] 位
+R_LARCH_TLS_IE64_HI12 94
+
+(*(uint32_t *) PC) [21 ... 10] = (GP+IE) [63 ... 52]
+*/
+#define R_LARCH_TLS_IE64_HI12 94
+
+/*
+ * TLS LD 符号 GOT 相表项对 PC 偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_TLS_LD_PC_HI20 95
+
+(*(uint32_t *) PC) [24 ... 5] = (((GP+GD) & ~0xfff) - (PC & ~0xfff)) [31 ... 12]
+*/
+#define R_LARCH_TLS_LD_PC_HI20 95
+
+/*
+ * TLS LD 符号 GOT 表项 32/64 位绝对地址的 [31 ... 12] 位
+R_LARCH_TLS_LD_HI20 96
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+IE) [31 ... 12]
+*/
+#define R_LARCH_TLS_LD_HI20 96
+
+/*
+ * TLS GD 符号 GOT 表项相对 PC 偏移 32/64 位的 [31 ... 12] 位
+R_LARCH_TLS_GD_PC_HI20 97
+
+(*(uint32_t *) PC) [24 ... 5] = (((GP+GD) & ~0xfff) - (PC & ~0xfff)) [31 ... 12]
+*/
+#define R_LARCH_TLS_GD_PC_HI20 97
+
+/*
+ * TLS GD 符号 GOT 表项 32/64 位绝对地址的 [31 ... 12] 位
+R_LARCH_TLS_LD_HI20 98
+
+(*(uint32_t *) PC) [24 ... 5] = (GP+IE) [31 ... 12]
+*/
+#define R_LARCH_TLS_LD_HI20 98
+
+/*
+ * 32 位相对 PC 偏移
+R_LARCH_32_PCREL 99
+
+(*(uint32_t *) PC) = (S+A-PC) [31:0]
+*/
+#define R_LARCH_32_PCREL 99
+
+/*
+ * 在相同的地址和其它重定位成对使用，标识指令可能被修改或删除(relaxed)。
+R_LARCH_RELAX 100
+
+*/
+#define R_LARCH_RELAX 100
+
+
+
+重定位类型               重定位号  含义
+R_LARCH_B16              64        (*(uint32_t *) PC)[25:10] = (S+A-PC)[17:2]
+R_LARCH_B21              65        (*(uint32_t *) PC)[4:0] = (S+A-PC)[22:18]
+                                   (*(uint32_t *) PC)[25:10] = (S+A-PC)[17:2]
+R_LARCH_B26              66        (*(uint32_t *) PC)[9:0] = (S+A-PC)[27:18]
+                                   (*(uint32_t *) PC)[25:10] = (S+A-PC)[17:2]
+R_LARCH_ABS_HI20         67        (*(uint32_t *) PC)[24:5] = (S+A)[31:12]
+R_LARCH_ABS_LO12         68        (*(uint32_t *) PC)[21:10] = (S+A)[11:0]
+R_LARCH_ABS64_LO20       69        (*(uint32_t *) PC)[24:5] = (S+A)[51:32]
+R_LARCH_ABS64_HI12       70        (*(uint32_t *) PC)[21:10] = (S+A)[63:52]
+R_LARCH_PCALA_HI20       71        (*(uint32_t *) PC)[24:5] = (((S+A) & ~0xfff) - (PC & ~0xfff))[31:12]
+R_LARCH_PCALA_LO12       72        (*(uint32_t *) PC)[21:10] = (S+A)[11:0]
+R_LARCH_PCALA64_LO20     73        (*(uint32_t *) PC)[24:5] = (S+A - (PC & ~0xffffffff))[51:32]
+R_LARCH_PCALA64_HI12     74        (*(uint32_t *) PC)[21:10] = (S+A - (PC & ~0xffffffff))[63:52]
+R_LARCH_GOT_PC_HI20      75        (*(uint32_t *) PC)[24:5] = ((GP+G) & ~0xfff) - (PC & ~0xfff))[31:12]
+R_LARCH_GOT_PC_LO12      76        (*(uint32_t *) PC)[21:10] = (GP+G)[11:0]
+R_LARCH_GOT64_PC_LO20    77        (*(uint32_t *) PC)[24:5] = (GP+G - (PC & ~0xffffffff))[51:32]
+R_LARCH_GOT64_PC_HI12    78        (*(uint32_t *) PC)[21:10] = (GP+G - (PC & ~0xffffffff))[63:52]
+R_LARCH_GOT_HI20         79        (*(uint32_t *) PC)[24:5] = (GP+G)[31:12]
+R_LARCH_GOT_LO12         80        (*(uint32_t *) PC)[21:10] = (GP+G)[11:0]
+R_LARCH_GOT64_LO20       81        (*(uint32_t *) PC)[24:5] = (GP+G)[51:32]
+R_LARCH_GOT64_HI12       82        (*(uint32_t *) PC)[21:10] = (GP+G)[63:52]
+R_LARCH_TLS_LE_HI20      83        (*(uint32_t *) PC)[24:5] = T[31:12]
+R_LARCH_TLS_LE_LO12      84        (*(uint32_t *) PC)[21:10] = T[11:0]
+R_LARCH_TLS_LE64_LO20    85        (*(uint32_t *) PC)[24:5] = T[51:32]
+R_LARCH_TLS_LE64_HI12    86        (*(uint32_t *) PC)[21:10] = T[63:52]
+R_LARCH_TLS_IE_PC_HI20   87        (*(uint32_t *) PC)[24:5] = (((GP+IE) & ~0xfff) - (PC & ~0xfff))[31:12]
+R_LARCH_TLS_IE_PC_LO12   88        (*(uint32_t *) PC)[21:10] = (GP+IE)[11:0]
+R_LARCH_TLS_IE64_PC_LO20 89        (*(uint32_t *) PC)[24:5] = (GP+IE - (PC & ~0xffffffff))[51:31]
+R_LARCH_TLS_IE64_PC_HI12 90        (*(uint32_t *) PC)[21:10] = (GP+IE - (PC & ~0xffffffff))[63:52]
+R_LARCH_TLS_IE64_HI20    91        (*(uint32_t *) PC)[24:5] = ((GP+IE)[31:12]
+R_LARCH_TLS_IE64_LO12    92        (*(uint32_t *) PC)[21:10] = (GP+IE)[11:0]
+R_LARCH_TLS_IE64_LO20    93        (*(uint32_t *) PC)[24:5] = ((GP+IE)[51:31]
+R_LARCH_TLS_IE64_HI12    94        (*(uint32_t *) PC)[21:10] = ((GP+IE)[63:52]
+R_LARCH_TLS_LD_PC_HI20   95        (*(uint32_t *) PC)[24:5] = (((GP+GD) & ~0xfff) - (PC & ~0xfff))[31:12]
+R_LARCH_TLS_LD64_HI20    96        (*(uint32_t *) PC)[24:5] = ((GP+GD)[31:12]
+R_LARCH_TLS_GD_PC_HI20   97        (*(uint32_t *) PC)[24:5] = (((GP+GD) & ~0xfff) - (PC & ~0xfff))[31:12]
+R_LARCH_TLS_GD64_HI20    98        (*(uint32_t *) PC)[24:5] = ((GP+GD)[31:12]
+R_LARCH_32_PCREL         99        *(uint32_t *) PC = (S+A-PC)[31:0]
+R_LARCH_RELAX            100
+
+助记符解释：
+
+1. B: load base address of object
+2. S: if sym is undefweak, S is 0; if st_shndx is SHN_ABS, S is the constant associated to sym; if st_shndx isn't SHN_ABS, S is link-address of sym.
+3. A: addend
+4. PC: base address of sec plus r_offset, the place of the storage unit being relocated
+5. PLT: link-time address of PLT of sym, Similiar to GOT entry but it can be branch target and implement lazy-bind.
+6. GP: _GLOBAL_OFFSET_TABLE_
+7. G: GP offset of the GOT entry of sym
+8. GD: GP offset of the GOT entryof tls gd symbol
+9. IE: GP offset of the GOT entryof tls ie symbol
+10. T: offset of $tp at runtime
+
+2. 汇编
+
+ABS_32
+lu12i.w		rd, %abs_hi20(symbol)
+ori			rd, rd, %abs_lo12(symbol)
+
+ABS_64
+lu12i.w		rd, %abs_hi20(symbol)
+ori			rd, rd, %abs_lo12(symbol)
+lu32i.d		rd, %abs64_lo20(symbol)
+lu52i.d		rd, rd, %abs64_hi12(symbol)
+
+PCREL_32
+pcalau12i	rd, %pc_hi20(symbol)
+addi.w		rd, rd, %pc_lo12(symbol)
+
+PCREL_64
+pcalau12i	rd, %pc_hi20(symbol)
+addi.d		rd, rd, %pc_lo12(symbol)
+
+PCREL_64_LARGE
+pcalau12i	$t0, %pc_hi20(symbol)
+addi.w		$t1, $r0, %pc_lo12(symbol)
+lu32i.d		$t1, %pc64_lo20(symbol)
+lu52i.d		$t1, $t1, %pc64_hi12(symbol)
+add.d		$t0, $t0, $t1
+
+GOT_32
+pcalau12i	rd, %got_pc_hi20(symbol)
+ld.w		rd, rd, %got_pc_lo12(symbol)
+
+GOT_64
+pcalau12i	rd, %got_pc_hi20(symbol)
+ld.d		rd, rd, %got_pc_lo12(symbol)
+
+GOT_64_LARGE_PCREL
+pcalau12i	$t0, %got_pc_hi20(symbol)
+addi.w		$t1, $r0, %got_pc_lo12(symbol)
+lu32i.d		$t1, %got64_pc_lo20(symbol)
+lu52i.d		$t1, $t1, %got64_pc_hi12(symbol)
+ldx.d		$t0, $t0, $t1
+
+GOT_64_LARGE_ABS
+lu12i.w		rd, %got64_hi20_pa(symbol)
+ori			rd, rd, %got64_lo12(symbol)
+lu32i.d		rd, %got64_lo20(symbol)
+lu52i.d		rd, rd, %got64_hi12(symbol)
+ld.d		rd, rd, 0x0
+
+TLS_LE_32 / TLS_LE_64
+
+lu12i.w		$t0, %le_hi20(symbol)
+ori			$t0, $t0, %le_lo12(symbol)
+add.d       $t0, $t0, $tp
+
+TLS_LE_64_LARGE
+lu12i.w		t0, %le_hi20(symbol)
+ori			$t0, $r0, %le_lo12(symbol)
+lu32i.d		rd, %le64_lo20(symbol)
+lu52i.d		rd, rd, %le64_hi12(symbol)
+add.d		$t0, $t0, $tp
+
+TLS_IE_32
+pcalau12i   $t0, %ie_pc_hi20(symbol)
+ld.w        $t0, $t0, %ie_pc_lo12(symbol)
+add.d       $t0, $t0, $tp
+
+TLS_IE_64
+pcalau12i   $t0, %ie_pc_hi20(symbol)
+ld.d        $t0, $t0, %ie_pc_lo12(symbol)
+add.d       $t0, $t0, $tp
+
+TLS_IE64_LARGE_PCREL
+pcalau12i   $t0, %ie_pc_hi20(symbol)
+addi.w      $t1, $r0, %ie_pc_lo12(symbol)
+lu32i.d		$t1, %ie_pc_lo20(symbol)
+lu52i.d		$t1, $t1, %ie_pc_hi12(symbol)
+ldx.d		$t0, $t0, $t1
+add.d 		$t0, $t0, $tp
+
+TLS_IE64_LARGE_ABS
+lu12i.w		rd, %ie64_hi20(symbol)
+ori			rd, rd, %ie64_lo12(symbol)
+lu32i.d		rd, %ie64_lo20(symbol)
+lu52i.d		rd, rd, %ie64_hi12(symbol)
+ld.d		rd, rd,  0x0
+add.d		rd, rd, $tp
+
+TLS_LD_32
+pcalau12i	$t0, %ld_pc_hi20(symbol)
+addi.w		$a0, $t0, %got_pc_lo12(symbol)
+bl			%plt(__tls_get_addr)
+
+TLS_LD_64
+pcalau12i	$t0, %ld_pc_hi20(symbol)
+addi.d		$a0, $t0, %got_pc_lo12(symbol)
+bl			%plt(__tls_get_addr)
+
+TLS_LD_64_LARGE_PCREL
+pcalau12i	$t0, %ld_pc_hi20(symbol)
+addi.w		$t1, $r0, %got_pc_lo12(symbol)
+lu32i.d 	$t1, %got64_pc_lo20(symbol)
+lu52i.d 	$t1, $t1, %got64_pc_hi12(symbol)
+add.d		$a0,  $t0, $t1
+bl			%plt(__tls_get_addr)
+
+TLS_LD_64_LARGE_ABS
+lu12i.w		rd, %ld64_hi20(symbol)
+ori			rd, rd, %got64_lo12(symbol)
+lu32i.d		rd, %got64_lo20(symbol)
+lu52i.d 	$a0, rd, %got64_hi12(symbol)
+bl      	%plt(__tls_get_addr)
+
+TLS_GD_32
+pcalau12i	$t0, %gd_pc_hi20(symbol)
+addi.w    	$a0, $t0, %got_pc_lo12(symbol)
+bl        	%plt(__tls_get_addr)
+
+TLS_GD_64
+pcalau12i	$t0, %gd_pc_hi20(symbol)
+addi.d		$a0, $t0, %got_pc_lo12(symbol)
+bl			%plt(__tls_get_addr)
+
+TLS_GD_64_LARGE_PCREL
+pcalau12i	$t0, %gd_pc_hi20(symbol)
+addi.w		$t1, $r0, %got_pc_lo12(symbol)
+lu32i.d 	$t1, %got64_pc_lo20(symbol)
+lu52i.d 	$t1, $t1, %got64_pc_hi12(symbol)
+add.d		$a0, $t0, $t1
+bl      	%plt(__tls_get_addr)
+
+TLS_GD_64_LARGE_ABS
+lu12i.w		rd, %gd64_hi20(symbol)
+ori			rd, rd, %got64_lo12(symbol)
+lu32i.d		rd, %got64_lo20(symbol)
+lu52i.d 	$a0, rd, %got64_hi12(symbol)
+bl      	%plt(__tls_get_addr)
+
+3. 说明
+
+1. *_PC(ALA)_HI20: (Addr & ~0xfff) - (PC & ~0xfff), 如果Addr & 0xfff > 0x7fff, Addr += 0x1000 (Addr为符号地址)
+2. *_PC64_LO20, *_PC64_LO20: 如果Addr & 0xfff > 0x7fff, Addr -= 0x1000000000
+3. *_PC(ALA)_LO12: Addr & 0xfff
+4. R_LARCH_32_PCREL 暂时只用来处理32位 .eh_frame段调试信息
+5. TLSLD, TLSGD复用了GOT重定位，TLSIE比较特殊，无法服用GOT重定位
+6. R_LARCH_RELAX暂未实现
