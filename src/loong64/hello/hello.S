@@ -7,7 +7,7 @@ msg:
 .text
     .globl  _start
 _start:
-    li.2          $a2, 0xf            # bug here, li $a2, len
+    li.w          $a2, 0xf            # bug here, li $a2, len
     la.local    $a1, msg
     li.w          $a0, 2              # stdout=1, stderr=2
     li.w          $a7, 64

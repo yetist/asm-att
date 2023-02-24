@@ -11,12 +11,12 @@ msg:
 .text
     .globl  _start
 _start:
-    li          $a2, len
+    li.w          $a2, len
     la.local    $a1, msg
-    li          $a0, STDOUT
-    li          $a7, SYS_write
+    li.w          $a0, STDOUT
+    li.w          $a7, SYS_write
     syscall     0x0
 
-    li          $a0, EXIT_SUCCESS
-    li          $a7, SYS_exit
+    li.w          $a0, EXIT_SUCCESS
+    li.w          $a7, SYS_exit
     syscall     0x0

@@ -23,7 +23,7 @@ if meson.is_cross_build()
   endif
 else  # native build
   if host_machine.cpu_family() in ['riscv64', 'aarch64', 'loongarch64']
-    lib_link_args = ['-Wl,-dynamic-linker=@0@'.format('/lib/ld-2.28.so')]
+    lib_link_args = ['-Wl,-dynamic-linker=@0@'.format('/lib64/ld-linux-loongarch-lp64d.so.1')]
     rpath = '/lib'
   endif
 endif

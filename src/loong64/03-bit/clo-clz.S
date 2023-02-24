@@ -12,9 +12,9 @@ ctz.d rd, rj                    # x[rd] = count_of_0x0_from_tailing(x[rj][63:0])
 .text
     .globl main
 main:
-    li          $s0, 0xa0f1			# equ: lu12i.w $s0, 0xa; ori $s0, $s0, 0xf1
-    li          $s1, 0xf284			# equ: lu12i.w $s1, 0xf; ori $s1, $s1, 0x284
-    li          $s2, 0x12e3			# equ: lu12i.w $s2, 0x1; ori $s2, $s2, 0x2e3
+    li.w          $s0, 0xa0f1			# equ: lu12i.w $s0, 0xa; ori $s0, $s0, 0xf1
+    li.w          $s1, 0xf284			# equ: lu12i.w $s1, 0xf; ori $s1, $s1, 0x284
+    li.w          $s2, 0x12e3			# equ: lu12i.w $s2, 0x1; ori $s2, $s2, 0x2e3
 
     clo.w       $s5, $s0
     clz.w       $s6, $s1
@@ -32,5 +32,5 @@ main:
 	 */
 
 # exit(0)
-    li          $a0, 0
+    li.w          $a0, 0
     bl          %plt(exit)

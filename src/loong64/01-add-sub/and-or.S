@@ -4,9 +4,9 @@
     .globl main
 main:
 # 32 bit
-    li          $s0, 0x156                  # $s0 = 0b0001 0101 0110 = 0x156
-    li          $s1, 0xfff                  # $s1 = 0b1111 1111 1111 = 0xfff
-    li          $s2, 0x10e                  # $s2 = 0b0001 0000 1110 = 0x10e
+    li.w          $s0, 0x156                  # $s0 = 0b0001 0101 0110 = 0x156
+    li.w          $s1, 0xfff                  # $s1 = 0b1111 1111 1111 = 0xfff
+    li.w          $s2, 0x10e                  # $s2 = 0b0001 0000 1110 = 0x10e
 
     and         $s3, $s0, $s1               # $s3 = s0 & s1
     and         $s4, $s0, $s2               # $s4 = s0 & s2
@@ -47,5 +47,5 @@ main:
     nop                                     # andi $zero, $zero, 0
 
 # exit(0)
-    li          $a0, 0
+    li.w          $a0, 0
     bl          %plt(exit)

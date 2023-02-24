@@ -64,5 +64,5 @@ main:
     bl          regdump     #0x4000000974
 
 # exit(0)
-    li          $a0, 0
+    li.w          $a0, 0
     bl          %plt(exit)

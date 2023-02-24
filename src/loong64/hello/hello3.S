@@ -9,5 +9,5 @@ main:
     la.local    $a0, msg
     bl          %plt(printf)
 
-    li          $a0, 0              # exit(0)
+    li.w          $a0, 0              # exit(0)
     bl          %plt(exit)

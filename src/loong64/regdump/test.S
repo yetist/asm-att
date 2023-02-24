@@ -1,15 +1,15 @@
 .text
     .globl main
 main:
-#    li          $s0, 0x12345678
+#    li.w          $s0, 0x12345678
 #	bl	        regdump
 #    ext.w.b     $s1, $s0
 #	bl	        regdump
 #    ext.w.h     $s1, $s0
 #	bl	        regdump
 
-    li          $s2, 0x11223344
-    li          $s3, 0xAABBCCDD
+    li.w          $s2, 0x11223344
+    li.w          $s3, 0xAABBCCDD
     bytepick.w  $s4, $s2, $s3,3
 	bl	        regdump
 

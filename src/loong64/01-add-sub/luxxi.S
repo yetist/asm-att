@@ -5,7 +5,7 @@
 .text
     .globl main
 main:
-    dli          $s0, 0x1122334412345678
+    li.d          $s0, 0x1122334412345678
     # 等于下面4条语句
     lu12i.w      $s1, 0x12345
     ori          $s1, $s1, 0x678
@@ -15,5 +15,5 @@ main:
     bl          regdump
 
 # exit(0)
-    li          $a0, 0
+    li.w          $a0, 0
     bl          %plt(exit)
