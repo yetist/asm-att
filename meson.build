@@ -21,6 +21,11 @@ if meson.is_cross_build()
   else
     error('skipping test on this platform')
   endif
+else  # native build
+  if host_machine.cpu_family() in ['riscv64', 'aarch64', 'loongarch64']
+    lib_link_args = ['-Wl,-dynamic-linker=@0@'.format('/lib/ld-2.28.so')]
+    rpath = '/lib'
+  endif
 endif
 
 # nasm
