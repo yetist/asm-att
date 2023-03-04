@@ -1,3 +1,4 @@
+// size_t strlen(const char *s);
 strlen:
     preld       	0x0, $a0, 0
     nor         	$t4, $zero, $zero
