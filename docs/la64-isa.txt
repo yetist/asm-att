@@ -216,8 +216,8 @@ ctz.d rd, rj                    # x[rd] = count_of_0x0_from_tailing(x[rj][63:0])
 
 - bytepick.{w/d}            : Byte Pick {Word / Doubleword}
 
-bytepick.w rd, rj, rk, sa2      # y=(x[rj][31:0] ... x[rk][31:0])[63:0]; x[rd] = sext((y[sa2:sa2-31])[31:0])
-bytepick.d rd, rj, rk, sa2      # y=(x[rj][63:0] ... x[rk][63:0])[127:0]; x[rd] = sext((y[sa3:sa3-63])[63:0])
+bytepick.w rd, rj, rk, sa2      # y=(x[rk][31:0] ... x[rj][31:0])[63:0]; x[rd] = sext((y[8x(8-sa2)-1:8x(4-sa2)])[31:0])
+bytepick.d rd, rj, rk, sa3      # y=(x[rk][63:0] ... x[rj][63:0])[127:0]; x[rd] = sext((y[8x(16-sa3)-1:8x(8-sa3)])[63:0])
 
 - revb.{2h/4h/2w/d}         : Revert Bit ???
 
@@ -277,7 +277,7 @@ bnez rd, offs21                 # if(x[rd] != 0) goto PC + sext(offs21[20:0] << 
 
 b offs26                        # goto PC + sext(offs26[25:0] << 2)
 bl offs26                       # goto PC + sext(offs26[25:0] << 2); ra(r1) = PC + 4
-jirl rd, rj, offs16             # goto x[rj] + sext(offs16[15:0] << 2); x[rd] = PC + 4;
+jirl rd, rj, offs16             # goto x[rj] + sext(offs16[15:0] << 2); x[rd] = PC + 4; jirl $ra, $zero, 0
 
 == 普通访存
 

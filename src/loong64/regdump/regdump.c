@@ -85,7 +85,6 @@ void regdump(void)
 
     printf("s0=%p\ts1=%p\ts2=%p\ts3=%p\ts4=%p\n", s0, s1, s2, s3, s4);
     printf("s5=%p\ts6=%p\ts7=%p\ts8=%p\n", s5, s6, s7, s8);
-
 }
 
 int main(int argc, char** argv)
